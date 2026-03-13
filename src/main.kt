@@ -2,56 +2,83 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import java.util.UUID
 
-// 1. Data Class: Demonstra conhecimento em modelos imutáveis e limpos
+// Modelo de Dados
 data class CryptoAsset(
     val id: String = UUID.randomUUID().toString(),
     val symbol: String,
     val name: String,
     val priceUsd: Double,
-    val changePercent24Hr: Double? // Nullable para testar Null Safety
+    val changePercent24Hr: Double?
 )
 
-// 2. Extension Function: Mostra que você sabe estender funcionalidades sem herança
+// Funções de Extensão (Demonstra capricho com a UI/UX via código)
 fun Double.formatCurrency(): String = "U$ ${"%.2f".format(this)}"
 
 class MarketEngine {
     
-    // 3. Mock Data com Listas: Uso de imutabilidade (listOf)
     private val assets = listOf(
         CryptoAsset(symbol = "BTC", name = "Bitcoin", priceUsd = 64230.50, changePercent24Hr = 1.45),
         CryptoAsset(symbol = "ETH", name = "Ethereum", priceUsd = 3450.20, changePercent24Hr = -0.30),
-        CryptoAsset(symbol = "SOL", name = "Solana", priceUsd = 145.10, changePercent24Hr = null), // Caso nulo
-        CryptoAsset(symbol = "DOT", name = "Polkadot", priceUsd = 7.15, changePercent24Hr = 2.10)
+        CryptoAsset(symbol = "SOL", name = "Solana", priceUsd = 145.10, changePercent24Hr = null),
+        CryptoAsset(symbol = "DOT", name = "Polkadot", priceUsd = 7.15, changePercent24Hr = 2.10),
+        CryptoAsset(symbol = "ADA", name = "Cardano", priceUsd = 0.45, changePercent24Hr = -1.20)
     )
 
-    // 4. Flow & Coroutines: O padrão ouro para processamento assíncrono
+    // FUNÇÃO 1: Stream de dados com Tratamento de Erros (Essencial para P&D)
     fun streamMarketData(): Flow<List<CryptoAsset>> = flow {
-        while(true) {
-            emit(assets)
-            delay(3000) // Simula atualização a cada 3 segundos
+        try {
+            while(true) {
+                if (assets.isEmpty()) throw Exception("Banco de dados vazio")
+                emit(assets)
+                delay(3000)
+            }
+        } catch (e: Exception) {
+            println("❌ Erro no Stream: ${e.message}")
         }
     }
 
-    // 5. Processamento de Dados: Uso de filter e High-order functions
-    fun getTopPerformers(minPrice: Double): List<CryptoAsset> {
-        return assets.filter { it.priceUsd > minPrice }
-                     .sortedByDescending { it.changePercent24Hr ?: 0.0 }
+    // FUNÇÃO 2: Busca por Símbolo (Uso de Scope Function 'let')
+    fun findAsset(symbol: String): CryptoAsset? {
+        return assets.find { it.symbol.equals(symbol, ignoreCase = true) }
+    }
+
+    // FUNÇÃO 3: Filtro de Performance (Uso de Sequences para maior desempenho)
+    fun getAssetsByPerformance(isPositive: Boolean): List<CryptoAsset> {
+        return assets.asSequence() // Transforma em Sequence para processar um por um (Performance!)
+            .filter { (it.changePercent24Hr ?: 0.0) >= 0 == isPositive }
+            .toList()
     }
 }
 
+// O MAIN agora simula um fluxo real de trabalho
 fun main() = runBlocking {
     val engine = MarketEngine()
-    println("🚀 KriptoFlow iniciado - Monitorando Mercado...\n")
+    
+    println("--- 📊 KRIPTOFLOW: ENGINE DE ALTA PERFORMANCE ---")
 
-    // 6. Scope Functions (apply/let): Mostra domínio da sintaxe moderna
-    val topAssets = engine.getTopPerformers(100.0).apply {
-        println("📊 Ativos de Alto Valor (> U$ 100):")
+    // Testando Busca com Null Safety
+    val search = "BTC"
+    engine.findAsset(search)?.let {
+        println("🔍 Resultado da Busca ($search): ${it.name} custando ${it.priceUsd.formatCurrency()}")
+    } ?: println("⚠️ Ativo $search não encontrado.")
+
+    println("\n📈 Ativos em Alta:")
+    engine.getAssetsByPerformance(true).forEach { 
+        println("- ${it.symbol}: +${it.changePercent24Hr ?: 0.0}%")
     }
 
-    topAssets.forEach { asset ->
-        // 7. Null Safety (Elvis Operator): Segurança contra crashes
-        val trend = asset.changePercent24Hr?.let { if(it > 0) "📈" else "📉" } ?: "➖"
-        
-        println("${asset.symbol} | Preço: ${asset.priceUsd.formatCurrency()} | Variação: ${asset.changePercent24Hr ?: 0.0}% $trend")
+    println("\n📉 Ativos em Baixa:")
+    engine.getAssetsByPerformance(false).forEach { 
+        println("- ${it.symbol}: ${it.changePercent24Hr ?: 0.0}%")
     }
+
+    println("\n📡 Iniciando Monitoramento em Tempo Real (5s)...")
+    val job = launch {
+        engine.streamMarketData().take(2).collect { data ->
+            println("✅ Update: ${data.size} ativos monitorados.")
+        }
+    }
+    
+    job.join()
+    println("\n--- FIM DA EXECUÇÃO ---")
 }
