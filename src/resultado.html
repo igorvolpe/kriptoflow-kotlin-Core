@@ -1,1 +1,41 @@
-
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { background-color: #0d1117; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Fira Code', monospace; }
+        .terminal { background-color: #161b22; width: 600px; border-radius: 8px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #30363d; overflow: hidden; }
+        .header { background-color: #21262d; padding: 10px; display: flex; gap: 6px; }
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background-color: #ff5f56; } .yellow { background-color: #ffbd2e; } .green { background-color: #27c93f; }
+        .content { padding: 20px; color: #c9d1d9; font-size: 14px; line-height: 1.6; }
+        .blue { color: #58a6ff; } .green-text { color: #3fb950; } .yellow-text { color: #d29922; } .red-text { color: #f85149; }
+        .cursor { border-left: 8px solid #58a6ff; margin-left: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="header">
+            <div class="dot red"></div> <div class="dot yellow"></div> <div class="dot green"></div>
+        </div>
+        <div class="content">
+            <span class="blue">--- 📊 KRIPTOFLOW: ENGINE DE ALTA PERFORMANCE ---</span><br>
+            🔍 Resultado da Busca (BTC): <span class="green-text">Bitcoin custando U$ 64230.50</span><br><br>
+            
+            <span class="yellow-text">📈 Ativos em Alta:</span><br>
+            - BTC: +1.45%<br>
+            - DOT: +2.1%<br><br>
+            
+            <span class="red-text">📉 Ativos em Baixa:</span><br>
+            - ETH: -0.3%<br>
+            - ADA: -1.2%<br><br>
+            
+            📡 Iniciando Monitoramento em Tempo Real...<br>
+            <span class="green-text">✅ Update [10:00:01]: 5 ativos recebidos via Flow.</span><br>
+            <span class="green-text">✅ Update [10:00:04]: 5 ativos recebidos via Flow.</span><br>
+            <span class="cursor"></span>
+        </div>
+    </div>
+</body>
+</html>
